@@ -47,7 +47,7 @@ if (date('N', $now) > 4){
 		$url = 'https://api.royaleapi.com/clan/'.$clans[$x];
 		$results = file_get_contents($url,true, $context);
 		$json = json_decode($results,true);
-		if($json !== null) {
+		if($json != null) {
 			if($json['clanChest']['crowns']<1600){
 				$db->query("UPDATE tblClanResults SET TM='".$hours.':'.str_pad($mins,2,'0',STR_PAD_LEFT)."',LVL=".$json['clanChest']['level'].",CRWNS=".$json['clanChest']['crowns']." WHERE CLAN_NM='".$clans[$x]."'");
 			} else if($json['clanChest']['crowns']==1600){
