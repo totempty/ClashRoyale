@@ -25,8 +25,8 @@ date_default_timezone_set('America/Los_Angeles');
 $now = strtotime('now');
 if (date('N', $now) == 7){
 	if (date('G', $now) < 17){
+		$db->query("DELETE FROM tblActivity");
 		for($x = 0; $x < $arrlength; $x++) {
-			$db->query("DELETE FROM tblActivity");
 			$url = 'https://api.royaleapi.com/clan/'.$clans[$x];
 			$results = file_get_contents($url,true, $context);
 			$json = json_decode($results,true);
@@ -54,18 +54,18 @@ if (date('N', $now) == 7){
 		$msg = "";
 		for($x = 0; $x < $arrlength; $x++) {
 			if($clans[$x]=='29RUQP8L'){
-				$sql = "SELECT CLAN_NM,USR_TAG,USR_NM,DONATIONS,DONATION_PER,CROWNS,USR_RANK,DONATIONS+CROWNS as ACTVTY FROM tblActivity WHERE CLAN_TAG='".$clans[$x]."' AND (DONATIONS < 200 AND CROWNS < 20) OR (USR_RANK='elder' AND DONATIONS < 300 AND CROWNS < 30) ORDER BY ACTVTY LIMIT 10";
+				$sql = "SELECT CLAN_NM,USR_TAG,USR_NM,DONATIONS,DONATION_PER,CROWNS,USR_RANK,DONATIONS+CROWNS as ACTVTY,USR_RANK FROM tblActivity WHERE CLAN_TAG='".$clans[$x]."' AND (DONATIONS < 200 AND CROWNS < 20) OR (USR_RANK='elder' AND DONATIONS < 300 AND CROWNS < 30) ORDER BY ACTVTY";
 			} else if($clans[$x]=='292UCRGU'){
-				$sql = "SELECT CLAN_NM,USR_TAG,USR_NM,DONATIONS,DONATION_PER,CROWNS,USR_RANK,DONATIONS+CROWNS as ACTVTY FROM tblActivity WHERE CLAN_TAG='".$clans[$x]."' AND DONATIONS < 50 AND CROWNS < 10 ORDER BY ACTVTY LIMIT 10";
+				$sql = "SELECT CLAN_NM,USR_TAG,USR_NM,DONATIONS,DONATION_PER,CROWNS,USR_RANK,DONATIONS+CROWNS as ACTVTY,USR_RANK FROM tblActivity WHERE CLAN_TAG='".$clans[$x]."' AND DONATIONS < 50 AND CROWNS < 10 ORDER BY ACTVTY";
 			} else {
-				$sql = "SELECT CLAN_NM,USR_TAG,USR_NM,DONATIONS,DONATION_PER,CROWNS,DONATIONS+CROWNS as ACTVTY FROM tblActivity WHERE CLAN_TAG='".$clans[$x]."' AND  DONATIONS < 200 AND CROWNS < 20 ORDER BY ACTVTY LIMIT 10";
+				$sql = "SELECT CLAN_NM,USR_TAG,USR_NM,DONATIONS,DONATION_PER,CROWNS,DONATIONS+CROWNS as ACTVTY,USR_RANK FROM tblActivity WHERE CLAN_TAG='".$clans[$x]."' AND  DONATIONS < 200 AND CROWNS < 20 ORDER BY ACTVTY";
 			}
 			$result = $db->query($sql);
 			$y = 1;
 			if($result->num_rows > 0){
 				while($row = $result->fetch_assoc()){
 					if($y==1){
-						$msg = $msg."__**The Bottom 10 of ".$row['CLAN_NM']."**__\n";
+						$msg = $msg."\n__**The Rule Breakers of ".$row['CLAN_NM']."**__\n";
 					}
 					$crowns='0';
 					if(strlen($row['CROWNS'])>0){
@@ -75,11 +75,14 @@ if (date('N', $now) == 7){
 					$y++;
 				}
 			}
+			
+			if(strlen($msg)){			
+				DiscordHook::send(new Message(new User($webhook, "ClanActivityBot"), $msg));
+				$msg = "";
+			}
+			
 		}		
-		if(strlen($msg)){			
-			DiscordHook::send(new Message(new User($webhook, "ClanActivityBot"), $msg));
-			$db->query("INSERT INTO tblPostHistory(DT_POSTED) VALUES (CURRENT_TIMESTAMP)");	
-		}
+		
 		
 	}
 
@@ -92,7 +95,7 @@ if (date('N', $now) == 7){
 			if($result->num_rows > 0){
 				while($row = $result->fetch_assoc()){
 					if($y==1){
-						$msg = $msg."__**The Top 10 of ".$row['CLAN_NM']."**__\n";
+						$msg = $msg."\n__**The Top 10 of ".$row['CLAN_NM']."**__\n";
 					}
 					$crowns='0';
 					if(strlen($row['CROWNS'])>0){
@@ -105,10 +108,10 @@ if (date('N', $now) == 7){
 		}
 		if(strlen($msg)){		 
 			DiscordHook::send(new Message(new User($webhook, "ClanActivityBot"), $msg));
-			$db->query("INSERT INTO tblPostHistory(DT_POSTED) VALUES (CURRENT_TIMESTAMP)");
 		}		
 	}	
 }
+$db->query("INSERT INTO tblPostHistory(DT_POSTED) VALUES (CURRENT_TIMESTAMP)");
 if (isset($db))
 		terminate($db);
 ?>
