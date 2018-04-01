@@ -52,7 +52,7 @@ if (date('N', $now) > 4){
 <?php
 $db = db_connect();	
 
-$result = $db->prepare("SELECT CLAN_TTL,TM, LVL FROM tblClanResults ORDER BY STR_TO_DATE(TM,'%h%i') ASC, LVL DESC");
+$result = $db->prepare("SELECT CLAN_TTL,TM, LVL FROM tblClanResults ORDER BY TM*1 ASC, LVL DESC");
 $result->execute();
 $result->bind_result($clan_ttl,$tm,$lvl);
 $result->store_result();

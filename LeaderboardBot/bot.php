@@ -65,7 +65,7 @@ if (date('N', $now) > 4){
 	$result2 = $db->query("SELECT ID FROM tblPostHistory WHERE DATE_FORMAT(DT_POSTED, '%m/%d/%Y')=DATE_FORMAT(DATE_ADD(NOW(), INTERVAL -7 HOUR), '%m/%d/%Y')");
 	if($result2->num_rows == 0){
 		$msg = ":crossed_swords: :crown: __**Clan Chest Leaderboard**__ :crown: :crossed_swords:\n";
-		$result = $db->prepare("SELECT CLAN_TTL,TM, LVL FROM tblClanResults ORDER BY STR_TO_DATE(TM,'%h%i') ASC, LVL DESC");
+		$result = $db->prepare("SELECT CLAN_TTL,TM, LVL FROM tblClanResults ORDER BY TM*1 ASC, LVL DESC");
 		$result->execute();
 		$result->bind_result($clan_ttl,$tm,$lvl);
 		$result->store_result();
