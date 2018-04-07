@@ -54,8 +54,10 @@ if (date('N', $now) > 4){
 				$db->query("UPDATE tblClanResults SET LVL=".$json['clanChest']['level'].",CRWNS=".$json['clanChest']['crowns']." WHERE CLAN_NM='".$clans[$x]."' AND LVL<>10");
 			}
 			
-			foreach($json['members'] as $member) {
-				$db->query("INSERT INTO tblResults(CLAN_NM,USR_NM,CROWNS) VALUES('".$clans[$x]."','".$member['name']."','".$member['clanChestCrowns']."')");
+			foreach($json['members'] as $member) {				
+				$db->query("INSERT INTO tblResults(CLAN_NM,USR_NM,USR_TAG,CROWNS) VALUES('".$clans[$x]."','".$member['name']."','".$member['tag']."','".$member['clanChestCrowns']."')");
+				$db->query("DELETE FROM tblResults2 WHERE USR_TAG='".$member['tag']."'");
+				$db->query("INSERT INTO tblResults2(CLAN_NM,USR_NM,USR_TAG,CROWNS) VALUES('".$clans[$x]."','".$member['name']."','".$member['tag']."','".$member['clanChestCrowns']."')");
 			}
 		}
 	}
@@ -91,10 +93,27 @@ if (date('N', $now) > 4){
 			}
 		}
 		$msg = $msg."\n";
+		$msg = $msg."\n:crossed_swords: :crown: __**Honorable Mentions**__ :crown: :crossed_swords:\n";
+		$result = $db->prepare("SELECT t2.CLAN_NM, t2.USR_NM, t2.CROWNS FROM tblResults2 t2 LEFT JOIN tblResults t1 ON t2.USR_TAG=t1.USR_TAG WHERE t1.USR_TAG IS NULL ORDER BY t2.CROWNS DESC");
+		$result->execute();
+		$result->bind_result($clan_nm,$usr_nm,$crowns);
+		$result->store_result();
+		$x = 1;
+		if($result->num_rows > 0){			
+			while ($result->fetch()) {
+				$msg = $msg."**".ordinal($x)." ".$usr_nm." supported ".$clan_nm." with ".$crowns."** :crown:\n";
+				$x++;
+			}
+		} else {
+			$msg = $msg."**There were no honorable mentions this clan chest.**\n";
+		}
+		$msg = $msg."\n";
 		$msg = $msg."*Thank you everyone for contributing! (This clan chest was from ".date("F",$fri)." ".ordinal(date("d",$fri))." - ".$suntext.ordinal(date("d",$sun)).".)*";
 		$db->query("INSERT INTO tblPostHistory(DT_POSTED) VALUES (CURRENT_TIMESTAMP)");			
 		DiscordHook::send(new Message(new User($webhook, "LeaderboardBot"), $msg));
 	}
+} else if (date('N', $now) == 4){
+	$db->query("DELETE FROM tblResults2");
 }
 if (isset($db))
 		terminate($db);
