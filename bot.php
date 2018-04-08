@@ -94,7 +94,7 @@ if (date('N', $now) > 4){
 		}
 		$msg = $msg."\n";
 		$msg = $msg."\n:crossed_swords: :crown: __**Honorable Mentions**__ :crown: :crossed_swords:\n";
-		$result = $db->prepare("SELECT t2.CLAN_NM, t2.USR_NM, t2.CROWNS FROM tblResults2 t2 LEFT JOIN tblResults t1 ON t2.USR_TAG=t1.USR_TAG WHERE t1.USR_TAG IS NULL ORDER BY t2.CROWNS DESC");
+		$result = $db->prepare("SELECT DISTINCT tblClanResults.CLAN_TTL, t2.USR_NM, t2.CROWNS FROM tblResults2 t2 LEFT JOIN tblResults t1 ON t2.USR_TAG=t1.USR_TAG LEFT JOIN tblClanResults ON tblClanResults.CLAN_NM=t2.CLAN_NM WHERE t1.USR_TAG IS NULL ORDER BY t2.CROWNS DESC");
 		$result->execute();
 		$result->bind_result($clan_nm,$usr_nm,$crowns);
 		$result->store_result();

@@ -21,16 +21,17 @@ function ordinal($number) {
 }
 
 date_default_timezone_set('America/Los_Angeles');
+$now = strtotime('now');
 if (date('N', strtotime('now')) > 1 && date('N', strtotime('now')) < 5){
 	$fri = strtotime('last friday');
 	$sun = strtotime('last sunday');
+	$chest_fri  = strtotime('friday this week');
+	$diff = $chest_fri - $now;
 } else {	
 	$fri = strtotime('friday this week');
 	$sun = strtotime('sunday this week');
-	
+	$diff = $now-$fri;
 }
-$now = strtotime('now');
-$diff = $now-$fri;
 $diff = $diff/3600;
 $hours = floor($diff);
 $mins = floor(($diff-$hours)*60);
@@ -77,6 +78,23 @@ if($result->num_rows > 0){
 		$x++;
 	}
 }
+
+echo '<br />';
+echo "<br />:crossed_swords: :crown: __**Honorable Mentions**__ :crown: :crossed_swords:<br />";
+$result = $db->prepare("SELECT DISTINCT tblClanResults.CLAN_TTL, t2.USR_NM, t2.CROWNS FROM tblResults2 t2 LEFT JOIN tblResults t1 ON t2.USR_TAG=t1.USR_TAG LEFT JOIN tblClanResults ON tblClanResults.CLAN_NM=t2.CLAN_NM WHERE t1.USR_TAG IS NULL ORDER BY t2.CROWNS DESC");
+$result->execute();
+$result->bind_result($clan_nm,$usr_nm,$crowns);
+$result->store_result();
+$x = 1;
+if($result->num_rows > 0){			
+	while ($result->fetch()) {
+		echo "**".ordinal($x)." ".$usr_nm." supported ".$clan_nm." with ".$crowns."** :crown:<br />";
+		$x++;
+	}
+} else {
+	echo "**There were no honorable mentions this clan chest.**<br />";
+}
+
 echo '<br />';
 echo '*Thank you everyone for contributing! (This clan chest was from '.date("F",$fri).' '.ordinal(date("d",$fri)).' - '.$suntext.ordinal(date("d",$sun)).'.)*';
 ?>
